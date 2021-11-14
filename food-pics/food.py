@@ -75,12 +75,10 @@ def main():
     submission = get_submission(r, reddit, subs, request_limit)
     embed = FoodPost.from_submission(submission).to_embed()
     data = {
-        "content": submission.title,
         "username": "Saxy's Food Webhook",
         "embeds": [embed]
     }
-    print(data)
-    result = requests.post(url=webhook_url, data=data)
+    result = requests.post(url=webhook_url, json=data)
     try:
         result.raise_for_status()
     except requests.exceptions.HTTPError as err:
