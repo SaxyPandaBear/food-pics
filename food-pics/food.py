@@ -51,7 +51,7 @@ def main():
     webhook_url = os.getenv('WEBHOOK_URL')
 
     reddit_client_id = os.getenv('REDDIT_CLIENT_ID')
-    reddit_client_secret = os.os.getenv('REDDIT_CLIENT_SECRET')
+    reddit_client_secret = os.getenv('REDDIT_CLIENT_SECRET')
     # expected to be a list of subreddits to search, separated by +
     # example: "foo+bar+baz" where foo, bar, and baz are all subreddits
     subs = os.getenv('SUBREDDITS')
