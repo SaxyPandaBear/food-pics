@@ -49,9 +49,9 @@ class FoodPostTest(unittest.TestCase):
     def test_discord_embed_omits_image_if_not_provided(self):
         fp = FoodPost(id='1', title='2', permalink='3')
         em = fp.to_embed()
-        self.assertEqual(em.title, '2')
-        self.assertEqual(em.description, '3')
-        self.assertEqual(em._image, {'url': 'None'})
+        self.assertEqual(em["title"], '2')
+        self.assertEqual(em["description"], '3')
+        self.assertNotIn("image", em)
 
 
     def test_discord_embed_truncates_title(self):
@@ -61,6 +61,6 @@ class FoodPostTest(unittest.TestCase):
         fp = FoodPost(id='1', title=title, permalink='2', image_url='3')
         em = fp.to_embed()
         self.assertEqual(fp.title, title)
-        self.assertEqual(em.title, expected)
-        self.assertEqual(em.description, '2')
-        self.assertEqual(em._image, {'url': '3'})
+        self.assertEqual(em["title"], expected)
+        self.assertEqual(em["description"], '2')
+        self.assertEqual(em["image"], {'url': '3'})

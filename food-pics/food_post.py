@@ -1,4 +1,4 @@
-from discord import Embed
+from typing import Dict
 
 
 class FoodPost:
@@ -20,13 +20,19 @@ class FoodPost:
     def __repr__(self):
         return self.__str__()
 
-    # Transforms this FoodPost object into the discord Embed object that
+    # Transforms this FoodPost object into the discord Embed dictionary that
     # should be posted.
-    def to_embed(self) -> Embed:
-        em = Embed(title=FoodPost.truncate(self.title), description=self.post_url, color=self.color)
-        if self.image_url != '':
-            em.set_image(url=self.image_url)
-        return em
+    def to_embed(self) -> Dict:
+        data = {
+            "title": FoodPost.truncate(self.title),
+            "description": self.post_url,
+            "color": self.color
+        }
+        if self.image_url is not None and self.image_url != '':
+            data["image"] = {
+                "url": self.image_url
+            }
+        return data
 
     # Given a Reddit submission title, truncate the title if it's too long
     # https://github.com/SaxyPandaBear/discord-food-bot/issues/28

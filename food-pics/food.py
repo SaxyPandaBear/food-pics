@@ -46,7 +46,7 @@ def get_submission(redis_client: Redis,
 def main():
     # Read the Redis URL from the environment. This value gets injected
     # by Heroku
-    r = init_reddis_client(os.environ['REDIS_URL'], decode_responses=True)
+    r = init_reddis_client(os.getenv('REDIS_URL'), decode_responses=True)
 
     webhook_url = os.getenv('WEBHOOK_URL')
 
