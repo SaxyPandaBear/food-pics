@@ -6,7 +6,6 @@ from praw.models import Submission
 from redis import Redis, from_url as init_reddis_client
 import requests
 import random
-import logging
 import sys
 
 
@@ -31,8 +30,8 @@ def get_submission(redis_client: Redis,
             if not redis_client.exists(submission.id):
                 redis_client.set(submission.id, '1')
                 return submission  # short-circuit early if we know this is new
-    except Exception:
-        logging.exception('An unexpected error occurred')
+    except Exception as e:
+        print(f'An unexpected exception occurred: {repr(e)}')
         return None
     # if we did not return before this, then all of the hot posts
     # returned have already been posted. default to return a random one,
@@ -58,13 +57,13 @@ def main():
     request_limit = int(os.getenv(key='LIMIT', default='24'))
 
     if webhook_url is None:
-        logging.error('No webhook URL specified in environment')
+        print('No webhook URL specified in environment')
         sys.exit(1)
     if reddit_client_id is None or reddit_client_secret is None:
-        logging.error('Reddit API credentials not configured in environment')
+        print('Reddit API credentials not configured in environment')
         sys.exit(1)
     if subs is None:
-        logging.error('No subreddits list defined in environment')
+        print('No subreddits list defined in environment')
         sys.exit(1)
 
     reddit = Reddit(
@@ -80,7 +79,7 @@ def main():
         "username": "Saxy's Food Webhook",
         "embeds": [embed]
     }
-    logging.info(data)
+    print(data)
     result = requests.post(url=webhook_url, data=data)
     try:
         result.raise_for_status()
