@@ -78,7 +78,7 @@ def main():
     data = {
         "content": submission.title,
         "username": "Saxy's Food Webhook",
-        "embeds": [embed.to_dict()]
+        "embeds": [embed]
     }
     result = requests.post(url=webhook_url, data=data)
     try:
