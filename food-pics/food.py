@@ -80,6 +80,7 @@ def main():
         "username": "Saxy's Food Webhook",
         "embeds": [embed]
     }
+    logging.info(data)
     result = requests.post(url=webhook_url, data=data)
     try:
         result.raise_for_status()
