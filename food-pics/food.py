@@ -43,10 +43,15 @@ def get_submission(redis_client: Redis,
 
 
 def main():
+    """
+    Initialize the Reddit and Redis clients, get a random Reddit post
+    from the configured subreddits, and post to the webhook URL
+    """
     # Read the Redis URL from the environment. This value gets injected
     # by Heroku
     r = init_reddis_client(os.getenv('REDIS_URL'), decode_responses=True)
 
+    # TODO: modify this to allow for multiple webhook URLs
     webhook_url = os.getenv('WEBHOOK_URL')
 
     reddit_client_id = os.getenv('REDDIT_CLIENT_ID')
@@ -73,9 +78,12 @@ def main():
     )
 
     submission = get_submission(r, reddit, subs, request_limit)
+    if submission is None:
+        print('No Reddit submission found. Check if the subreddits are configured properly, or clear the Redis cache.')
+        sys.exit(1)
     embed = FoodPost.from_submission(submission).to_embed()
     data = {
-        "username": "Saxy's Food Webhook",
+        "username": "Food from Reddit",
         "embeds": [embed]
     }
     result = requests.post(url=webhook_url, json=data)
