@@ -84,6 +84,7 @@ def main():
     embed = FoodPost.from_submission(submission).to_embed()
     data = {
         "username": "Food from Reddit",
+        "avatar_url": "https://i.imgur.com/gLP2Tl0.jpeg",
         "embeds": [embed]
     }
     result = requests.post(url=webhook_url, json=data)
