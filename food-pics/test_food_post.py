@@ -5,11 +5,12 @@ import unittest
 
 
 class DummySubmission:
-    def __init__(self, params: Dict):
-        self.id = params['id']
-        self.url = params['url']
-        self.permalink = params['permalink']
-        self.title = params['title']
+    def __init__(self, **kwargs):
+        self.id = kwargs.get('id')
+        self.url = kwargs.get('url')
+        self.permalink = kwargs.get('permalink')
+        self.title = kwargs.get('title')
+        self.media_metadata = kwargs.get('media_metadata')
 
 class FoodPostTest(unittest.TestCase):
 
@@ -38,7 +39,7 @@ class FoodPostTest(unittest.TestCase):
             'permalink': 'baz',
             'title': 'something'
         }
-        fp = FoodPost.from_submission(DummySubmission(submission_params))
+        fp = FoodPost.from_submission(DummySubmission(**submission_params))
         self.assertIsNotNone(fp)
         self.assertEqual(fp.id, submission_params['id'])
         self.assertEqual(fp.image_url, submission_params['url'])
@@ -64,3 +65,65 @@ class FoodPostTest(unittest.TestCase):
         self.assertEqual(em["title"], expected)
         self.assertEqual(em["description"], '2')
         self.assertEqual(em["image"], {'url': '3'})
+
+
+    
+    def test_derive_image_url_from_gallery(self):
+        submission_params = {
+            'id': 'foo',
+            'url': 'https://www.reddit.com/gallery/bar',
+            'permalink': 'baz',
+            'title': 'something',
+            'media_metadata': {
+                'foo1': 1,  # the value here isn't used
+                'bar2': 3
+            }
+        }
+        fp = FoodPost.from_submission(DummySubmission(**submission_params))
+        self.assertIsNotNone(fp)
+        self.assertEqual(fp.image_url, 'https://i.redd.it/bar2.jpg')
+
+
+    def test_none_url_returns_none(self):
+        submission_params = {
+            'id': 'foo',
+            'permalink': 'baz',
+            'title': 'something'
+        }
+        res = FoodPost.derive_image_url(DummySubmission(**submission_params))
+        self.assertIsNone(res)
+
+    
+    def test_normal_url_does_not_mutate(self):
+        submission_params = {
+            'id': 'foo',
+            'url': 'bar',
+            'permalink': 'baz',
+            'title': 'something'
+        }
+        res = FoodPost.derive_image_url(DummySubmission(**submission_params))
+        self.assertEqual(res, submission_params['url'])
+
+
+    
+    def test_empty_metadata_returns_none(self):
+        submission_params = {
+            'id': 'foo',
+            'url': 'https://www.reddit.com/gallery/bar',
+            'permalink': 'baz',
+            'title': 'something',
+            'media_metadata': {}
+        }
+        res = FoodPost.derive_image_url(DummySubmission(**submission_params))
+        self.assertIsNone(res)
+
+
+    def test_none_metadata_returns_none(self):
+        submission_params = {
+            'id': 'foo',
+            'url': 'https://www.reddit.com/gallery/bar',
+            'permalink': 'baz',
+            'title': 'something'
+        }
+        res = FoodPost.derive_image_url(DummySubmission(**submission_params))
+        self.assertIsNone(res)
