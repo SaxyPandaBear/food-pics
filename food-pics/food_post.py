@@ -1,4 +1,7 @@
-from typing import Dict
+from typing import Dict, Optional
+
+
+GALLERY_URL = 'https://www.reddit.com/gallery/'
 
 
 class FoodPost:
@@ -51,8 +54,34 @@ class FoodPost:
     @staticmethod
     def from_submission(submission):
         sub_id = submission.id
-        url = submission.url
+        url = FoodPost.derive_image_url(submission)
         # permalink does not give the full URL, so build it instead.
         permalink = f'https://www.reddit.com{submission.permalink}'
         title = submission.title
         return FoodPost(id=sub_id, title=title, image_url=url, permalink=permalink)
+
+    @staticmethod
+    def derive_image_url(submission) -> Optional[str]:
+        """
+        A submission can point to a gallery instead of a direct link to
+        an image. This gallery URL does not render properly on Discord in the
+        embed. Have to pick one of the images ourselves, and then use that
+        to display in this scenario.
+        @param submission The submission object from PRAW
+        """
+        url = submission.url
+        if url is not None and url.startswith(GALLERY_URL):
+            # https://github.com/SaxyPandaBear/my-webhooks/issues/4
+            # If the submission points to a Reddit gallery, need to pick one
+            # of the images in the gallery to render in the Discord embed.
+            # The set of images are defined in the "media_metadata" attribute
+            # of the submission.
+            images: Dict = submission.media_metadata
+            if images is None or len(images) < 1:
+                return None
+            # Unsure if ordering is guaranteed, so in order to be 
+            # deterministic, ensure ordering on our end by sorting.
+            ids = sorted(images)  # this sorts by key, and only returns keys.
+            return f'https://i.redd.it/{ids[0]}.jpg'
+        else:
+            return url
