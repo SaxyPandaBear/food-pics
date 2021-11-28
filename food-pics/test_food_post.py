@@ -1,6 +1,5 @@
 # Tests for the FoodPost class
 from food_post import FoodPost
-from typing import Dict
 import unittest
 
 
@@ -13,15 +12,12 @@ class DummySubmission:
         self.media_metadata = kwargs.get('media_metadata')
 
 class FoodPostTest(unittest.TestCase):
-
     def test_truncate_does_nothing_for_shorter_title(self):
         title = 'something short'
         self.assertEqual(FoodPost.truncate(title), title)
 
-
     def test_truncate_returns_none_for_none_input(self):
         self.assertIsNone(FoodPost.truncate(None))
-
 
     def test_truncate_title_that_is_too_long(self):
         truncated_title = 'a' * 253  # the title will be truncated this much
@@ -30,7 +26,6 @@ class FoodPostTest(unittest.TestCase):
         actual = FoodPost.truncate(title)
         self.assertNotEqual(actual, title)
         self.assertEqual(actual, expected)
-
 
     def test_transform_reddit_submission_to_food_post(self):
         submission_params = {
@@ -46,14 +41,12 @@ class FoodPostTest(unittest.TestCase):
         self.assertEqual(fp.title, submission_params['title'])
         self.assertEqual(fp.post_url, f'https://www.reddit.com{submission_params["permalink"]}')
 
-
     def test_discord_embed_omits_image_if_not_provided(self):
         fp = FoodPost(id='1', title='2', permalink='3')
         em = fp.to_embed()
         self.assertEqual(em["title"], '2')
         self.assertEqual(em["description"], '3')
         self.assertNotIn("image", em)
-
 
     def test_discord_embed_truncates_title(self):
         truncated_title = 'a' * 253  # the title will be truncated this much
@@ -66,7 +59,12 @@ class FoodPostTest(unittest.TestCase):
         self.assertEqual(em["description"], '2')
         self.assertEqual(em["image"], {'url': '3'})
 
-
+    def test_json_with_hash(self):
+        fp = FoodPost(id='1', image_url='2')
+        d = fp.to_json_with_hash(123)
+        self.assertEqual(d['id'], '1')
+        self.assertEqual(d['url'], '2')
+        self.assertEqual(d['hash'], "123")
     
     def test_derive_image_url_from_gallery(self):
         submission_params = {
@@ -83,7 +81,6 @@ class FoodPostTest(unittest.TestCase):
         self.assertIsNotNone(fp)
         self.assertEqual(fp.image_url, 'https://i.redd.it/bar2.jpg')
 
-
     def test_none_url_returns_none(self):
         submission_params = {
             'id': 'foo',
@@ -92,7 +89,6 @@ class FoodPostTest(unittest.TestCase):
         }
         res = FoodPost.derive_image_url(DummySubmission(**submission_params))
         self.assertIsNone(res)
-
     
     def test_normal_url_does_not_mutate(self):
         submission_params = {
@@ -103,8 +99,6 @@ class FoodPostTest(unittest.TestCase):
         }
         res = FoodPost.derive_image_url(DummySubmission(**submission_params))
         self.assertEqual(res, submission_params['url'])
-
-
     
     def test_empty_metadata_returns_none(self):
         submission_params = {
@@ -116,7 +110,6 @@ class FoodPostTest(unittest.TestCase):
         }
         res = FoodPost.derive_image_url(DummySubmission(**submission_params))
         self.assertIsNone(res)
-
 
     def test_none_metadata_returns_none(self):
         submission_params = {

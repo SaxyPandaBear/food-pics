@@ -37,6 +37,27 @@ class FoodPost:
             }
         return data
 
+    def to_json_with_hash(self, img_hash: int) -> Dict:
+        """
+        Transform the submission and it's hash into a Python
+        dictionary, so that it can be converted into a JSON string
+        that gets persisted in the Redis cache as part of an array.
+
+        Example:
+        {
+            "id": "foo-bar-baz",
+            "url": "https://i.reddit.com/abc123",
+            "hash": "1234567890"
+        }
+        @param img_hash the hash of the byte array of the Image from PIL
+        @return dictionary to be persisted into the Redis cache.
+        """
+        return {
+            "id": self.id,
+            "url": self.image_url,
+            "hash": str(img_hash)
+        }
+
     # Given a Reddit submission title, truncate the title if it's too long
     # https://github.com/SaxyPandaBear/discord-food-bot/issues/28
     # If the title is not too long, return the input unchanged
