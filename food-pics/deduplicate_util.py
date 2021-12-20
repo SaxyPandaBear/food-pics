@@ -1,9 +1,7 @@
-from typing import Dict
-from food_post import FoodPost
 from redis import Redis
 import json
 
-def already_posted(r: Redis, author: str, img_hash: int, post_id: str) -> bool: 
+def already_posted(r: Redis, author: str, img_hash: int, post_id: str) -> bool:
     """
     https://github.com/SaxyPandaBear/my-webhooks/issues/2
     Check the Redis cache to see if the given FoodPost has already been posted.

@@ -1,8 +1,10 @@
+from deduplicate_util import already_posted
+from image_util import compute_image_hash
 from food_post import FoodPost
 import os
+import json
 from typing import List, Optional
 from praw import Reddit
-from praw.models import Submission
 from redis import Redis, from_url as init_reddis_client
 import requests
 import random
@@ -12,24 +14,25 @@ import sys
 def get_submission(redis_client: Redis, 
                    reddit_client: Reddit, 
                    subs: str, 
-                   request_limit: int) -> Optional[Submission]:
+                   request_limit: int) -> Optional[FoodPost]:
     """
     Retrieve a "hot" post from the list of subreddits defined in the
-    'SUBREDDITS' environment variable, returning the PRAW model of a
-    post (submission).
+    'SUBREDDITS' environment variable, returning a FoodPost object
     @param redis_client  Redis client to interface with Heroku Redis
     @param reddit_client PRAW Reddit client
     @return a "hot" post from the list of subreddits, or None if there are no 
             posts, or an error occurs
     """
     # fallback in case all of the posts are already used
-    submissions: List[Submission] = []
+    submissions: List[FoodPost] = []
     try:
         for submission in reddit_client.subreddit(subs).hot(limit=request_limit):
-            submissions.append(submission)
-            if not redis_client.exists(submission.id):
-                redis_client.set(submission.id, '1')
-                return submission  # short-circuit early if we know this is new
+            fp = FoodPost.from_submission(submission)
+            submissions.append(fp)
+            img_hash = fp.image_url
+            if not already_posted(redis_client, submission.author.name, img_hash, submission.id):
+                redis_client.sadd(submission.author.name, fp.to_json_with_hash(img_hash))
+                return fp  # short-circuit early if we know this is new
     except Exception as e:
         print(f'An unexpected exception occurred: {repr(e)}')
         return None
