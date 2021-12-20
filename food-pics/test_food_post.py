@@ -60,10 +60,9 @@ class FoodPostTest(unittest.TestCase):
         self.assertEqual(em["image"], {'url': '3'})
 
     def test_json_with_hash(self):
-        fp = FoodPost(id='1', image_url='2')
+        fp = FoodPost(id='1')
         d = fp.to_json_with_hash(123)
         self.assertEqual(d['id'], '1')
-        self.assertEqual(d['url'], '2')
         self.assertEqual(d['hash'], "123")
     
     def test_derive_image_url_from_gallery(self):

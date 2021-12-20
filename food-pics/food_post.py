@@ -46,7 +46,6 @@ class FoodPost:
         Example:
         {
             "id": "foo-bar-baz",
-            "url": "https://i.reddit.com/abc123",
             "hash": "1234567890"
         }
         @param img_hash the hash of the byte array of the Image from PIL
@@ -54,7 +53,6 @@ class FoodPost:
         """
         return {
             "id": self.id,
-            "url": self.image_url,
             "hash": str(img_hash)
         }
 
