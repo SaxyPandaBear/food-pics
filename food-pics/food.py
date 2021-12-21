@@ -40,8 +40,10 @@ def get_submission(redis_client: Redis,
     # returned have already been posted. default to return a random one,
     # rather than try the search again to limit execution time
     if len(submissions) > 0:
+        print("Picking random submission")
         return random.choice(submissions)
     else:
+        print("No submissions found from Reddit for supplied subreddits")
         return None
 
 
@@ -52,7 +54,9 @@ def main():
     """
     # Read the Redis URL from the environment. This value gets injected
     # by Heroku
+    print("Finding Reddit submission")
     r = init_reddis_client(os.getenv('REDIS_URL'), decode_responses=True)
+    print("Instantiated Redis client")
 
     # TODO: modify this to allow for multiple webhook URLs
     webhook_url = os.getenv('WEBHOOK_URL')
@@ -79,6 +83,7 @@ def main():
         client_secret=reddit_client_secret,
         user_agent='discord:food_waifu:v0.2'
     )
+    print("Instantiated Reddit client")
 
     submission = get_submission(r, reddit, subs, request_limit)
     if submission is None:
@@ -90,6 +95,7 @@ def main():
         "avatar_url": "https://i.imgur.com/gLP2Tl0.jpeg",
         "embeds": [embed]
     }
+    print(f"Submitting {data} to Discord webhook")
     result = requests.post(url=webhook_url, json=data)
     try:
         result.raise_for_status()

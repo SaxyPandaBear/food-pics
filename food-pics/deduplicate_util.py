@@ -15,6 +15,7 @@ def already_posted(r: Redis, author: str, img_hash: int, post_id: str) -> bool:
     @return True if the post is already in the cache, False otherwise
     """
     if r.exists(author) == 0:
+        print(f"Reddit user {author} does not exist in the cache yet.")
         return False  # the author key is not in the Redis cache at all
     # If the user exists, need to check the submission IDs, or the image hashes
     # to see if this image has already been posted. If not, we can store it.
@@ -22,5 +23,7 @@ def already_posted(r: Redis, author: str, img_hash: int, post_id: str) -> bool:
     posted = [json.loads(s) for s in r.smembers(author)]
     for p in posted:
         if p['id'] == post_id or p['hash'] == img_hash:
+            print(f"Post {post_id} by {author} has already recently.")
             return True
+    print(f"Post {post_id} has not been posted yet.")
     return False  # it was not posted already.
