@@ -31,7 +31,7 @@ def get_submission(redis_client: Redis,
             submissions.append(fp)
             img_hash = fp.image_url
             if not already_posted(redis_client, submission.author.name, img_hash, submission.id):
-                redis_client.sadd(submission.author.name, fp.to_json_with_hash(img_hash))
+                redis_client.sadd(submission.author.name, json.dumps(fp.to_json_with_hash(img_hash)))
                 return fp  # short-circuit early if we know this is new
     except Exception as e:
         print(f'An unexpected exception occurred: {repr(e)}')
