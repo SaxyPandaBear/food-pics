@@ -89,7 +89,7 @@ def main():
     if submission is None:
         print('No Reddit submission found. Check if the subreddits are configured properly, or clear the Redis cache.')
         sys.exit(1)
-    embed = FoodPost.from_submission(submission).to_embed()
+    embed = submission.to_embed()
     data = {
         "username": "Food from Reddit",
         "avatar_url": "https://i.imgur.com/gLP2Tl0.jpeg",
