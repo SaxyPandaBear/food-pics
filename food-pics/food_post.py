@@ -88,8 +88,11 @@ class FoodPost:
         to display in this scenario.
         @param submission The submission object from PRAW
         """
+        if submission is None or submission.url is None:
+            return None
+            
         url = submission.url
-        if url is not None and url.startswith(GALLERY_URL):
+        if url.startswith(GALLERY_URL):
             # https://github.com/SaxyPandaBear/my-webhooks/issues/4
             # If the submission points to a Reddit gallery, need to pick one
             # of the images in the gallery to render in the Discord embed.
@@ -101,6 +104,9 @@ class FoodPost:
             # Unsure if ordering is guaranteed, so in order to be 
             # deterministic, ensure ordering on our end by sorting.
             ids = sorted(images)  # this sorts by key, and only returns keys.
-            return f'https://i.redd.it/{ids[0]}.jpg'
-        else:
-            return url
+            url = f'https://i.redd.it/{ids[0]}.jpg'
+        
+        query_param_idx = url.find('?')
+        if query_param_idx >= 0:
+            url = url[:query_param_idx]
+        return url

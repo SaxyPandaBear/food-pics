@@ -98,6 +98,20 @@ class FoodPostTest(unittest.TestCase):
         }
         res = FoodPost.derive_image_url(DummySubmission(**submission_params))
         self.assertEqual(res, submission_params['url'])
+
+    def test_derive_image_url_truncates_query_parameters(self):
+        # 
+        img_url = 'https://preview.redd.it/chun02can1f81.png?width=640&format=png&auto=webp&s=e05f245a349e5971ced5ed125327bb69fa0a4ccc'
+        expected = 'https://preview.redd.it/chun02can1f81.png'
+        
+        submission_params = {
+            'id': 'foo',
+            'url': img_url,
+            'permalink': 'baz',
+            'title': 'something'
+        }
+        res = FoodPost.derive_image_url(DummySubmission(**submission_params))
+        self.assertEqual(res, expected)
     
     def test_empty_metadata_returns_none(self):
         submission_params = {
