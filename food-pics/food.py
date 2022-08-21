@@ -29,7 +29,7 @@ def get_submission(redis_client: Redis,
         for submission in reddit_client.subreddit(subs).hot(limit=request_limit):
             fp = FoodPost.from_submission(submission)
             submissions.append(fp)
-            img_hash = fp.image_url
+            img_hash = compute_image_hash(fp.image_url)
             if not already_posted(redis_client, submission.author.name, img_hash, submission.id):
                 redis_client.sadd(submission.author.name, json.dumps(fp.to_json_with_hash(img_hash)))
                 return fp  # short-circuit early if we know this is new
