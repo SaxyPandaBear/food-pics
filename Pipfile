@@ -4,6 +4,7 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+black = "*"
 
 [packages]
 redis = "*"
@@ -11,6 +12,7 @@ requests = "*"
 praw = "*"
 pillow = "*"
 pylint = "*"
+black = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
