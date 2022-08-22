@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "67c5cafa5c4e7586b81beacd8c9d06ad76e1fd62c2584c1a9dfed529820eb4fb"
+            "sha256": "b954415559ea72828ef66ad1ef067f8f359ae6cf73b01cf3662196716b6de7f6"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -294,6 +294,12 @@
             "markers": "python_full_version >= '3.6.8'",
             "version": "==3.0.9"
         },
+        "python-levenshtein": {
+            "hashes": [
+                "sha256:dc2395fbd148a1ab31090dd113c366695934b9e85fe5a4b2a032745efd0346f6"
+            ],
+            "version": "==0.12.2"
+        },
         "redis": {
             "hashes": [
                 "sha256:a52d5694c9eb4292770084fa8c863f79367ca19884b329ab574d5cb2036b3e54",
@@ -309,6 +315,17 @@
             ],
             "index": "pypi",
             "version": "==2.28.1"
+        },
+        "thefuzz": {
+            "extras": [
+                "speedup"
+            ],
+            "hashes": [
+                "sha256:4fcdde8e40f5ca5e8106bc7665181f9598a9c8b18b0a4d38c41a095ba6788972",
+                "sha256:6f7126db2f2c8a54212b05e3a740e45f4291c497d75d20751728f635bb74aa3d"
+            ],
+            "index": "pypi",
+            "version": "==0.19.0"
         },
         "tomli": {
             "hashes": [

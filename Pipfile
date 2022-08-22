@@ -13,6 +13,7 @@ praw = "*"
 pillow = "*"
 pylint = "*"
 black = "*"
+thefuzz = {extras = ["speedup"], version = "*"}
 
 [requires]
 python_version = "3.8"
