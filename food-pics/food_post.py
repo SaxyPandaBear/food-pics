@@ -1,7 +1,9 @@
+from datetime import datetime
+from image_util import compute_image_hash
 from typing import Dict, Optional
 
 
-GALLERY_URL = 'https://www.reddit.com/gallery/'
+GALLERY_URL = "https://www.reddit.com/gallery/"
 
 
 class FoodPost:
@@ -11,14 +13,20 @@ class FoodPost:
     # post_url - the permalink for this post
     # image_url - the url for the associated image of a submission
     def __init__(self, **kwargs):
-        self.id = kwargs.get('id')
-        self.title = kwargs.get('title')
-        self.post_url = kwargs.get('permalink')
-        self.image_url = kwargs.get('image_url')
+        self.id = kwargs.get("id")
+        self.title = kwargs.get("title")
+        self.post_url = kwargs.get("permalink")
+        self.image_url = kwargs.get("image_url")
+        self.img_hash = kwargs.get("img_hash")  # for testing
         self.color = 0xDB5172
+        ts = kwargs.get("created_utc")
+        if ts is not None and ts > 0:
+            self.date_posted = datetime.fromtimestamp(ts)
+        else:
+            self.date_posted = None
 
     def __str__(self):
-        return f'{self.title} : {self.post_url}'
+        return f"{self.title} : {self.post_url}"
 
     def __repr__(self):
         return self.__str__()
@@ -29,15 +37,18 @@ class FoodPost:
         data = {
             "title": FoodPost.truncate(self.title),
             "description": self.post_url,
-            "color": self.color
+            "color": self.color,
         }
-        if self.image_url is not None and self.image_url != '':
-            data["image"] = {
-                "url": self.image_url
-            }
+        if self.image_url is not None and self.image_url != "":
+            data["image"] = {"url": self.image_url}
         return data
 
-    def to_json_with_hash(self, img_hash: int) -> Dict:
+    def image_hash(self) -> Optional[int]:
+        if self.img_hash is None:
+            self.img_hash = compute_image_hash(self.image_url)
+        return self.img_hash
+
+    def to_json(self) -> Dict:
         """
         Transform the submission and it's hash into a Python
         dictionary, so that it can be converted into a JSON string
@@ -46,14 +57,18 @@ class FoodPost:
         Example:
         {
             "id": "foo-bar-baz",
-            "hash": "1234567890"
+            "hash": "1234567890",
+            "title" "Something here",
+            "date": 2022-01-01,
         }
         @param img_hash the hash of the byte array of the Image from PIL
         @return dictionary to be persisted into the Redis cache.
         """
         return {
             "id": self.id,
-            "hash": str(img_hash)
+            "hash": str(self.image_hash()),
+            "title": self.title,
+            "date": self.date_posted,
         }
 
     # Given a Reddit submission title, truncate the title if it's too long
@@ -66,7 +81,7 @@ class FoodPost:
 
         # truncate with an ellipsis, so we need some leeway
         if len(title) > 256:
-            return title[:253] + '...'  # take first 253 characters
+            return title[:253] + "..."  # take first 253 characters
         return title
 
     # Take a Reddit submission object, and transform that into a FoodPost
@@ -75,9 +90,16 @@ class FoodPost:
         sub_id = submission.id
         url = FoodPost.derive_image_url(submission)
         # permalink does not give the full URL, so build it instead.
-        permalink = f'https://www.reddit.com{submission.permalink}'
+        permalink = f"https://www.reddit.com{submission.permalink}"
         title = submission.title
-        return FoodPost(id=sub_id, title=title, image_url=url, permalink=permalink)
+        created_utc = submission.created_utc
+        return FoodPost(
+            id=sub_id,
+            title=title,
+            image_url=url,
+            permalink=permalink,
+            created_utc=created_utc,
+        )
 
     @staticmethod
     def derive_image_url(submission) -> Optional[str]:
@@ -90,7 +112,7 @@ class FoodPost:
         """
         if submission is None or submission.url is None:
             return None
-            
+
         url = submission.url
         if url.startswith(GALLERY_URL):
             # https://github.com/SaxyPandaBear/my-webhooks/issues/4
@@ -101,12 +123,12 @@ class FoodPost:
             images: Dict = submission.media_metadata
             if images is None or len(images) < 1:
                 return None
-            # Unsure if ordering is guaranteed, so in order to be 
+            # Unsure if ordering is guaranteed, so in order to be
             # deterministic, ensure ordering on our end by sorting.
             ids = sorted(images)  # this sorts by key, and only returns keys.
-            url = f'https://i.redd.it/{ids[0]}.jpg'
-        
-        query_param_idx = url.find('?')
+            url = f"https://i.redd.it/{ids[0]}.jpg"
+
+        query_param_idx = url.find("?")
         if query_param_idx >= 0:
             url = url[:query_param_idx]
         return url

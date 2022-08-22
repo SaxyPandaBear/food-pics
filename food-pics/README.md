@@ -25,3 +25,12 @@ Ran 6 tests in 0.000s
 
 OK
 ```
+
+### Linting and Formatting
+Uses `black` and `pylint` for formatting and linting.
+```bash
+pipenv shell
+(pipenv) cd ./food-pics/
+(pipenv) black .
+(pipenv) pylint --rcfile ../.pylintrc .
+```
