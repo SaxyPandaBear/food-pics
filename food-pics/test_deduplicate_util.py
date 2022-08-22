@@ -31,10 +31,10 @@ class DeduplicateUtilTest(unittest.TestCase):
         d = datetime(2022, 8, 21, 1)
         a = {"date": d}
         b = {"title": "[homemade] Beef tacos.", "date": d}
-        self.assertTrue(fuzzy_match(a, b))
+        self.assertFalse(fuzzy_match(a, b))
 
     def test_missing_date(self):
         d = datetime(2022, 8, 21, 1)
         a = {"title": "Homemade beef tacos.", "date": d}
         b = {"title": "[homemade] Beef tacos."}
-        self.assertTrue(fuzzy_match(a, b))
+        self.assertFalse(fuzzy_match(a, b))
