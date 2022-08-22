@@ -1,6 +1,6 @@
 # Tests for the FoodPost class
 from datetime import datetime
-from food_post import FoodPost
+from food_post import FoodPost, DATETIME_FMT
 import unittest
 
 
@@ -84,10 +84,13 @@ class FoodPostTest(unittest.TestCase):
         self.assertEqual(em["image"], {"url": "3"})
 
     def test_json(self):
-        fp = FoodPost(id="1", img_hash=123)
+        now = datetime.now()
+        fp = FoodPost(id="1", title="hello", img_hash=123, created_utc=now.timestamp())
         d = fp.to_json()
         self.assertEqual(d["id"], "1")
         self.assertEqual(d["hash"], "123")
+        self.assertEqual(d["title"], "hello")
+        self.assertEqual(d["date"], now.strftime(DATETIME_FMT))
 
     def test_derive_image_url_from_gallery(self):
         submission_params = {

@@ -4,6 +4,7 @@ from typing import Dict, Optional
 
 
 GALLERY_URL = "https://www.reddit.com/gallery/"
+DATETIME_FMT = "%d/%m/%y %H:%M"
 
 
 class FoodPost:
@@ -59,7 +60,7 @@ class FoodPost:
             "id": "foo-bar-baz",
             "hash": "1234567890",
             "title" "Something here",
-            "date": 2022-01-01,
+            "date": "2022-01-01",
         }
         @param img_hash the hash of the byte array of the Image from PIL
         @return dictionary to be persisted into the Redis cache.
@@ -68,7 +69,7 @@ class FoodPost:
             "id": self.id,
             "hash": str(self.image_hash()),
             "title": self.title,
-            "date": self.date_posted,
+            "date": self.date_posted.strftime(DATETIME_FMT),
         }
 
     # Given a Reddit submission title, truncate the title if it's too long

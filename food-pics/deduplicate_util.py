@@ -1,9 +1,9 @@
 from typing import Dict
 from redis import Redis
 from thefuzz import fuzz
-from datetime import timedelta
+from datetime import datetime, timedelta
+from food_post import DATETIME_FMT
 import json
-from csv import DictReader
 
 
 FUZZ_THRESHOLD = 80
@@ -50,4 +50,7 @@ def fuzzy_match(a, b) -> bool:
     ratio = fuzz.token_set_ratio(title_a, title_b)
     if ratio < FUZZ_THRESHOLD:
         return False
-    return abs(a["date"] - b["date"]) < ONE_DAY
+
+    date1 = datetime.strptime(a["date"], DATETIME_FMT)
+    date2 = datetime.strptime(b["date"], DATETIME_FMT)
+    return abs(date1 - date2) < ONE_DAY
