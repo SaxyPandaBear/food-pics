@@ -34,3 +34,9 @@ pipenv shell
 (pipenv) black .
 (pipenv) pylint --rcfile ../.pylintrc .
 ```
+
+### Troubleshooting
+#### Clear Redis data
+1. Log in to the Heroku CLI
+1. `heroku redis:cli -a the-app-name`
+1. `flushall`

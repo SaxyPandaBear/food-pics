@@ -34,13 +34,17 @@ def already_posted(r: Redis, author: str, post: Dict) -> bool:
     posted = [json.loads(s) for s in r.smembers(author)]
     for p in posted:
         if p["id"] == post_id or p["hash"] == img_hash or fuzzy_match(p, post):
-            print(f"Post {post_id} by {author} has already recently.")
+            print(f"{author}/{post_id} has already been posted recently.")
             return True
     print(f"Post {post_id} has not been posted yet.")
     return False  # it was not posted already.
 
 
 def fuzzy_match(a, b) -> bool:
+    if "title" not in a or "title" not in b:
+        return False
+    if "date" not in a or "date" not in b:
+        return False
     title_a = a["title"].lower()
     title_b = b["title"].lower()
     ratio = fuzz.token_set_ratio(title_a, title_b)
