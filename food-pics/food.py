@@ -3,11 +3,18 @@ from food_post import FoodPost
 import os
 import json
 from typing import List, Optional
+from datetime import timedelta
 from praw import Reddit
 from redis import Redis, from_url as init_reddis_client
 import requests
 import random
 import sys
+
+
+# Keep records in Redis for at most one week. Reddit moves fast,
+# so although this doesn't prevent karma farmer reposts from
+# showing up, a week is still a long time.
+TIME_TO_LIVE = timedelta(weeks=1)
 
 
 def get_submission(
@@ -27,8 +34,13 @@ def get_submission(
         for submission in reddit_client.subreddit(subs).hot(limit=request_limit):
             fp = FoodPost.from_submission(submission)
             submissions.append(fp)
-            if not already_posted(redis_client, submission.author.name, fp.to_json()):
-                redis_client.sadd(submission.author.name, json.dumps(fp.to_json()))
+            fp_hash = fp.to_json()
+            if not already_posted(redis_client, submission.author.name, fp_hash):
+                redis_client.set(
+                    f"{submission.author.name}/{fp.id}",
+                    json.dumps(fp_hash),
+                    ex=TIME_TO_LIVE,
+                )
                 return fp  # short-circuit early if we know this is new
     except Exception as e:
         print(f"An unexpected exception occurred: {repr(e)}")

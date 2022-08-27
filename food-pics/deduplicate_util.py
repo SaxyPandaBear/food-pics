@@ -6,7 +6,7 @@ from food_post import DATETIME_FMT
 import json
 
 
-FUZZ_THRESHOLD = 80
+FUZZ_THRESHOLD = 65  # lower threshold isn't bad. we want low tolerance for dupes.
 ONE_DAY = timedelta(hours=24)
 
 
@@ -23,32 +23,53 @@ def already_posted(r: Redis, author: str, post: Dict) -> bool:
     @param post_id The Reddit submission ID to check for
     @return True if the post is already in the cache, False otherwise
     """
-    if r.exists(author) == 0:
-        print(f"Reddit user {author} does not exist in the cache yet.")
-        return False  # the author key is not in the Redis cache at all
-    # If the user exists, need to check the submission IDs, or the image hashes
-    # to see if this image has already been posted. If not, we can store it.
-    # each member is a JSON string, so need to unmarshal it
     post_id = post["id"]
-    img_hash = post["hash"]
-    posted = [json.loads(s) for s in r.smembers(author)]
-    for p in posted:
-        if p["id"] == post_id or p["hash"] == img_hash or fuzzy_match(p, post):
-            print(f"{author}/{post_id} has already been posted recently.")
-            return True
+    if r.exists(f"{author}/{post_id}") > 0:
+        print(f"Post {post_id} by {author} has already been used recently.")
+        return True
+
+    # https://github.com/SaxyPandaBear/my-webhooks/issues/14
+    # If the author/post combination key does not exist, there is still
+    # a possibility that the author reposted the same image, so it needs
+    # a deduplication check. Since all of the keys are expected to follow
+    # the scheme "author/postId", we can scan the Redis cache by the author
+    # name, iterate over the returned records and compare image hashes and
+    # post titles to do a fuzzy match.
+    r.scan()
+    i = r.scan_iter(f"{author}/*")
+    done = False
+    while not done:
+        try:
+            key = next(i)
+            val = r.get(key)  # realistically this should never be None...
+            if val is not None:
+                p = json.loads(val)
+                if fuzzy_match(p, post):
+                    print(
+                        f"Something similar to {author}/{post_id} has already been posted recently."
+                    )
+                    return True
+        except StopIteration:
+            done = True
     print(f"Post {post_id} has not been posted yet.")
     return False  # it was not posted already.
 
 
 def fuzzy_match(a, b) -> bool:
-    if "title" not in a or "title" not in b:
+    if "hash" not in a or "hash" not in b:
         return False
-    if "date" not in a or "date" not in b:
+    if a["hash"] == b["hash"]:
+        return True
+
+    if "title" not in a or "title" not in b:
         return False
     title_a = a["title"].lower()
     title_b = b["title"].lower()
     ratio = fuzz.token_set_ratio(title_a, title_b)
     if ratio < FUZZ_THRESHOLD:
+        return False
+
+    if "date" not in a or "date" not in b:
         return False
 
     date1 = datetime.strptime(a["date"], DATETIME_FMT)
