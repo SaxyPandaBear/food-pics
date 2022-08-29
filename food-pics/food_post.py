@@ -10,11 +10,15 @@ DATETIME_FMT = "%d/%m/%y %H:%M"
 class FoodPost:
     # Attributes
     # id - the submission ID given by Reddit
-    # title - the Post title
+    # author - the author of the submission
+    # title - the post title
     # post_url - the permalink for this post
     # image_url - the url for the associated image of a submission
+    # img_hash - (for testing only) the hash of the image bytes array
+    # created_utc - timestamp that the post was created
     def __init__(self, **kwargs):
         self.id = kwargs.get("id")
+        self.author = kwargs.get("author")
         self.title = kwargs.get("title")
         self.post_url = kwargs.get("permalink")
         self.image_url = kwargs.get("image_url")
@@ -25,6 +29,13 @@ class FoodPost:
             self.date_posted = datetime.fromtimestamp(ts)
         else:
             self.date_posted = None
+        ts = kwargs.get("date_found")
+        if ts is not None and ts > 0:
+            # For testing only
+            self.date_found = datetime.fromtimestamp(ts)
+        else:
+            # default to now timestamp in non-test cases
+            self.date_found = datetime.now()
 
     def __str__(self):
         return f"{self.title} : {self.post_url}"
@@ -44,7 +55,7 @@ class FoodPost:
             data["image"] = {"url": self.image_url}
         return data
 
-    def image_hash(self) -> Optional[int]:
+    def image_hash(self) -> int:
         if self.img_hash is None:
             self.img_hash = compute_image_hash(self.image_url)
         return self.img_hash
@@ -53,23 +64,26 @@ class FoodPost:
         """
         Transform the submission and it's hash into a Python
         dictionary, so that it can be converted into a JSON string
-        that gets persisted in the Redis cache as part of an array.
+        that gets persisted in the database.
 
         Example:
         {
             "id": "foo-bar-baz",
-            "hash": "1234567890",
+            "author": "person123"
+            "img": "1234567890",
             "title" "Something here",
-            "date": "2022-01-01",
+            "posted": "2022-01-01",
+            "found": "2022-08-01"
         }
-        @param img_hash the hash of the byte array of the Image from PIL
-        @return dictionary to be persisted into the Redis cache.
+        @return dictionary to be persisted into the database.
         """
         return {
             "id": self.id,
-            "hash": str(self.image_hash()),
+            "author": self.author,
+            "img": str(self.image_hash()),
             "title": self.title,
-            "date": self.date_posted.strftime(DATETIME_FMT),
+            "posted": self.date_posted.strftime(DATETIME_FMT),
+            "found": self.date_found.strftime(DATETIME_FMT),
         }
 
     # Given a Reddit submission title, truncate the title if it's too long
@@ -89,17 +103,27 @@ class FoodPost:
     @staticmethod
     def from_submission(submission):
         sub_id = submission.id
+        author = submission.author.name
         url = FoodPost.derive_image_url(submission)
         # permalink does not give the full URL, so build it instead.
         permalink = f"https://www.reddit.com{submission.permalink}"
         title = submission.title
         created_utc = submission.created_utc
+
+        # for testing only
+        try:
+            found_ts = submission.test_date_found
+        except AttributeError:
+            found_ts = None  # Default to this if submission isn't a dummy obj
+
         return FoodPost(
             id=sub_id,
+            author=author,
             title=title,
             image_url=url,
             permalink=permalink,
             created_utc=created_utc,
+            date_found=found_ts,
         )
 
     @staticmethod

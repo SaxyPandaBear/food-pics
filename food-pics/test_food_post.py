@@ -4,14 +4,24 @@ from food_post import FoodPost, DATETIME_FMT
 import unittest
 
 
+TEST_DATE = datetime(2001, 1, 1)
+
+
 class DummySubmission:
     def __init__(self, **kwargs):
         self.id = kwargs.get("id")
+        self.author = kwargs.get("author")
         self.url = kwargs.get("url")
         self.permalink = kwargs.get("permalink")
         self.title = kwargs.get("title")
         self.media_metadata = kwargs.get("media_metadata")
         self.created_utc = kwargs.get("created_utc")
+        self.test_date_found = kwargs.get("date_found")
+
+
+class DummyAuthor:
+    def __init__(self, **kwargs):
+        self.name = kwargs.get("name")
 
 
 class FoodPostTest(unittest.TestCase):
@@ -36,6 +46,9 @@ class FoodPostTest(unittest.TestCase):
             "url": "bar",
             "permalink": "baz",
             "title": "something",
+            "author": DummyAuthor(name="someone"),
+            "created_utc": TEST_DATE.timestamp(),
+            "test_date_found": TEST_DATE.timestamp(),
         }
         fp = FoodPost.from_submission(DummySubmission(**submission_params))
         self.assertIsNotNone(fp)
@@ -45,15 +58,17 @@ class FoodPostTest(unittest.TestCase):
         self.assertEqual(
             fp.post_url, f'https://www.reddit.com{submission_params["permalink"]}'
         )
+        self.assertEqual(fp.author, submission_params["author"].name)
 
     def test_transform_submission_with_timestamp(self):
-        now = datetime.utcnow()
         submission_params = {
             "id": "foo",
             "url": "bar",
             "permalink": "baz",
             "title": "something",
-            "created_utc": now.timestamp(),
+            "author": DummyAuthor(name="someone"),
+            "created_utc": TEST_DATE.timestamp(),
+            "date_found": TEST_DATE.timestamp(),
         }
         fp = FoodPost.from_submission(DummySubmission(**submission_params))
         self.assertIsNotNone(fp)
@@ -63,7 +78,9 @@ class FoodPostTest(unittest.TestCase):
         self.assertEqual(
             fp.post_url, f'https://www.reddit.com{submission_params["permalink"]}'
         )
-        self.assertEqual(fp.date_posted, now)
+        self.assertEqual(fp.date_posted, TEST_DATE)
+        self.assertEqual(fp.date_found, TEST_DATE)
+        self.assertEqual(fp.author, submission_params["author"].name)
 
     def test_discord_embed_omits_image_if_not_provided(self):
         fp = FoodPost(id="1", title="2", permalink="3")
@@ -85,12 +102,21 @@ class FoodPostTest(unittest.TestCase):
 
     def test_json(self):
         now = datetime.now()
-        fp = FoodPost(id="1", title="hello", img_hash=123, created_utc=now.timestamp())
+        fp = FoodPost(
+            id="1",
+            author="someone",
+            title="hello",
+            img_hash=123,
+            created_utc=now.timestamp(),
+            date_found=now.timestamp(),
+        )
         d = fp.to_json()
         self.assertEqual(d["id"], "1")
-        self.assertEqual(d["hash"], "123")
+        self.assertEqual(d["author"], "someone")
+        self.assertEqual(d["img"], "123")
         self.assertEqual(d["title"], "hello")
-        self.assertEqual(d["date"], now.strftime(DATETIME_FMT))
+        self.assertEqual(d["posted"], now.strftime(DATETIME_FMT))
+        self.assertEqual(d["found"], now.strftime(DATETIME_FMT))
 
     def test_derive_image_url_from_gallery(self):
         submission_params = {
@@ -99,6 +125,7 @@ class FoodPostTest(unittest.TestCase):
             "permalink": "baz",
             "title": "something",
             "media_metadata": {"foo1": 1, "bar2": 3},  # the value here isn't used
+            "author": DummyAuthor(name="someone"),
         }
         fp = FoodPost.from_submission(DummySubmission(**submission_params))
         self.assertIsNotNone(fp)

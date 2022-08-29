@@ -19,14 +19,13 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pipenv
-          pipenv install
+          pip install -r requirements.txt
       - name: Check formatting
         working-directory: food-pics
         run: |
-          pipenv run black . --check --verbose
+          black . --check --verbose
       - name: Execute tests
         working-directory: food-pics
         run: |
-          pipenv run python -m unittest
+          python -m unittest
       
