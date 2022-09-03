@@ -121,7 +121,7 @@ def post():
 
 
 jobqueue = queue.Queue()
-schedule.every(1).hours.do(jobqueue.put, post)
+schedule.every().minute.do(jobqueue.put, post)
 
 
 def worker_main():
