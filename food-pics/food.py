@@ -5,7 +5,7 @@ import json
 from typing import List, Optional
 from datetime import timedelta
 from praw import Reddit
-from redis import Redis, from_url as init_reddis_client
+from redis import Redis, from_url as init_redis_client
 import requests
 import random
 import sys
@@ -64,7 +64,7 @@ def main():
     # Read the Redis URL from the environment. This value gets injected
     # by Heroku
     print("Finding Reddit submission")
-    r = init_reddis_client(os.getenv("REDIS_URL"), decode_responses=True)
+    r = init_redis_client(os.getenv("REDIS_URL"), decode_responses=True)
     print("Instantiated Redis client")
 
     # TODO: modify this to allow for multiple webhook URLs
