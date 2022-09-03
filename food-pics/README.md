@@ -19,21 +19,34 @@ Configurations for the script are expected to be in environment variables.
 | `SUBREDDITS`           | subreddits to scrape split by `+`, e.g.: `foo+bar+Baz` |
 | `LIMIT`                | (optional) batch size for scraping from Reddit         |
 
+### Setup
+This project is written in Python 3.9.13.
+Install project requirements:
+```bash
+python -m pip install -r requirements.txt
+# or
+pip install -r requirements.txt
+```
+
 ### Testing
 Run Python unit tests as follows:
 ```bash
 # From the root of the repository
-cd food-pics/  # test discovery from the root directory doesn't work
-python -m unittest  # will find all files prefixed 'test_' and execute them
+pytest # this does test auto discovery
 ```
 An example output of this:
 ```
-$ python3 -m unittest
-......
-----------------------------------------------------------------------
-Ran 6 tests in 0.000s
+$ pytest
+===================== test session starts ======================
+platform darwin -- Python 3.9.13, pytest-7.1.2, pluggy-1.0.0
+rootdir: /path/to/repo/my-webhooks
+collected 30 items                                             
 
-OK
+food-pics/test_deduplicate_util.py .............         [ 43%]
+food-pics/test_food_post.py ..............               [ 90%]
+food-pics/test_image_util.py ...                         [100%]
+
+====================== 30 passed in 3.06s ======================
 ```
 
 ### Linting and Formatting
