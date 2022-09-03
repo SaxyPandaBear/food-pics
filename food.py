@@ -88,14 +88,11 @@ def post():
     request_limit = int(os.getenv(key="LIMIT", default="24"))
 
     if webhook_url is None:
-        print("No webhook URL specified in environment")
-        sys.exit(1)
+        raise Exception("No webhook URL specified in environment")
     if reddit_client_id is None or reddit_client_secret is None:
-        print("Reddit API credentials not configured in environment")
-        sys.exit(1)
+        raise Exception("Reddit API credentials not configured in environment")
     if subs is None:
-        print("No subreddits list defined in environment")
-        sys.exit(1)
+        raise Exception("No subreddits list defined in environment")
 
     reddit = Reddit(
         client_id=reddit_client_id,
@@ -106,10 +103,7 @@ def post():
 
     submission = get_submission(r, reddit, subs, request_limit)
     if submission is None:
-        print(
-            "No Reddit submission found. Check if the subreddits are configured properly, or clear the Redis cache."
-        )
-        sys.exit(1)
+        raise Exception("No Reddit submission found")
     embed = submission.to_embed()
     data = {
         "username": "Food from Reddit",
@@ -118,12 +112,9 @@ def post():
     }
     print(f"Submitting {data} to Discord webhook")
     result = requests.post(url=webhook_url, json=data)
-    try:
-        result.raise_for_status()
-    except requests.exceptions.HTTPError as err:
-        print(err)
-    else:
-        print("Payload delivered successfully, code {}.".format(result.status_code))
+    result.raise_for_status()
+    
+    print("Payload delivered successfully, code {}.".format(result.status_code))
 
 
 jobqueue = queue.Queue()
