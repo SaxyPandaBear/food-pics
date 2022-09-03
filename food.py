@@ -68,7 +68,13 @@ def post():
     # Read the Redis URL from the environment. This value gets injected
     # by Heroku
     print("Finding Reddit submission")
-    r = init_redis_client(os.getenv("REDIS_URL"), decode_responses=True)
+    r = Redis(
+        host=os.getenv("REDISHOST"),
+        username=os.getenv("REDISUSER"),
+        password=os.getenv("REDISPASSWORD"),
+        port=os.getenv("REDISPORT"),
+        decode_responses=True,
+    )
     print("Instantiated Redis client")
 
     # TODO: modify this to allow for multiple webhook URLs
