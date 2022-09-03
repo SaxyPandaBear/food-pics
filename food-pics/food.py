@@ -9,6 +9,10 @@ from redis import Redis, from_url as init_redis_client
 import requests
 import random
 import sys
+import schedule
+import time
+import queue
+import threading
 
 
 # Keep records in Redis for at most one week. Reddit moves fast,
@@ -56,7 +60,7 @@ def get_submission(
         return None
 
 
-def main():
+def post():
     """
     Initialize the Reddit and Redis clients, get a random Reddit post
     from the configured subreddits, and post to the webhook URL
@@ -116,5 +120,20 @@ def main():
         print("Payload delivered successfully, code {}.".format(result.status_code))
 
 
+def worker_main():
+    while True:
+        job_func = jobqueue.get()
+        job_func()
+        jobqueue.task_done()
+
+
 if __name__ == "__main__":
-    main()
+    jobqueue = queue.Queue()
+    schedule.every(1).hours.do(jobqueue.put, post)
+
+    worker_thread = threading.Thread(target=worker_main)
+    worker_thread.start()
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+    

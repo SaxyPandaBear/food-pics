@@ -12,25 +12,15 @@ Example:
 heroku run -a my-dyno-12345 python food-pics/food.py
 ```
 
-### Why does the Procfile not do anything?
-There is a dummy `Procfile` in this that SHOULD NOT be modified, as it is just a
-placeholder in order to enforce free dyno usage for using the Heroku Scheduler 
-addon. When no Procfile is defined, and no processes running on the environment,
-the Heroku Scheduler addon does not give the free dyno option - just the paid 
-tiers.
+### Dependency management
+This project uses pipenv, which has it's challenges.
 
-### Configuring the scheduler
-Using the [Heroku Scheduler](https://devcenter.heroku.com/articles/scheduler), you
-can schedule one-off dyno execution for a process. This makes it easy to perform
-simple serverless workflows. Create a new job for your application, and just use
-the UI to set the schedule and execution script to run. The execution script should
-be like what you would run if you were going to run a one-off dyno from the CLI.
-
-For something like
+Railway requires a `requirements.txt` file to detect a Python app, so
+run:
 ```bash
-heroku run -a my-dyno-12345 python food-pics/food.py
+pipenv requirements > requirements.txt
 ```
-you would want to configure with just the `python food-pics/food.py` part.
+after updating dependencies in order to propagate them on deployments.
 
 ### How does it know what webhook to push to?
 Currently it's only pushing to one webhook, defined in the `WEBHOOK_URL` 
