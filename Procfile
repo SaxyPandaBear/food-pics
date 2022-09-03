@@ -1,1 +1,1 @@
-worker: python food-pics/food.py
+worker: python /app/food-pics/food.py
