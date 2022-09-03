@@ -113,12 +113,12 @@ def post():
     print(f"Submitting {data} to Discord webhook")
     result = requests.post(url=webhook_url, json=data)
     result.raise_for_status()
-    
+
     print("Payload delivered successfully, code {}.".format(result.status_code))
 
 
 jobqueue = queue.Queue()
-schedule.every().minute.do(jobqueue.put, post)
+schedule.every().hour.at(":00").do(jobqueue.put, post)
 
 
 def worker_main():
