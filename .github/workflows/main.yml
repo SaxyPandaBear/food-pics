@@ -22,11 +22,9 @@ jobs:
           pip install pipenv
           pipenv install
       - name: Check formatting
-        working-directory: food-pics
         run: |
           pipenv run black . --check --verbose
       - name: Execute tests
-        working-directory: food-pics
         run: |
           pipenv run python -m unittest
       

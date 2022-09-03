@@ -1,16 +1,24 @@
-My Webhooks
-===========
+Food Pics
+=========
 
-This repo contains code that will be executed and push content to webhooks. 
+This is a one-off script that connects to Reddit, uses a configured 
+delimited list of subreddit names, scrapes the subs for "hot" 
+posts, and submits a random one to a configured Discord webhook.
 
-This can be run directly with one-off dynos on Heroku. Assuming that your
-dyno is set up with the right environment (the `./food-pics` webhook code
-uses Python), you should be able to invoke a one-off dyno to run the code.
+The original idea for this came from 
+https://github.com/SaxyPandaBear/discord-food-bot
 
-Example:
-```bash
-heroku run -a my-dyno-12345 python food-pics/food.py
-```
+### Configurations
+Configurations for the script are expected to be in environment variables.
+| Key                    | Description                                            |
+| ---------------------- | ------------------------------------------------------ |
+| `REDIS_URL`            | endpoint to connect to Redis                           |
+| `WEBHOOK_URL`          | URL for Discord channel webhook                        |
+| `REDDIT_CLIENT_ID`     | client ID for Reddit API access                        |
+| `REDDIT_CLIENT_SECRET` | client secret for Reddit API access                    |
+| `SUBREDDITS`           | subreddits to scrape split by `+`, e.g.: `foo+bar+Baz` |
+| `LIMIT`                | (optional) batch size for scraping from Reddit         |
+
 
 ### Dependency management
 This project uses pipenv, which has it's challenges.
@@ -26,3 +34,35 @@ after updating dependencies in order to propagate them on deployments.
 Currently it's only pushing to one webhook, defined in the `WEBHOOK_URL` 
 environment variable (in Heroku), but can split this out into separate
 variables as necessary in the future.
+
+### Testing
+Run Python unit tests as follows:
+```bash
+# From the root of the repository
+pipenv run python -m unittest  # will find all files prefixed 'test_' and execute them
+```
+An example output of this:
+```
+$ python3 -m unittest
+......
+----------------------------------------------------------------------
+Ran 6 tests in 0.000s
+
+OK
+```
+
+### Linting and Formatting
+Uses `black` and `pylint` for formatting and linting.
+```bash
+pipenv shell
+(pipenv) cd ./food-pics/
+(pipenv) black .
+(pipenv) pylint --rcfile ../.pylintrc .
+```
+
+### Troubleshooting
+#### Clear Redis data
+TODO: update this since not using Heroku anymore
+1. Log in to the Heroku CLI
+1. `heroku redis:cli -a the-app-name`
+1. `flushall`

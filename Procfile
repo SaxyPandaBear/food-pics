@@ -1,1 +1,1 @@
-web: python food-pics/food.py
+web: python food.py
