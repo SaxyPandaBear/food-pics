@@ -123,8 +123,9 @@ def post():
 jobqueue = queue.Queue()
 schedule.every(1).hours.do(jobqueue.put, post)
 
+
 def worker_main():
-    print('Running job exec thread')
+    print("Running job exec thread")
     while True:
         job_func = jobqueue.get()
         job_func()
@@ -132,7 +133,7 @@ def worker_main():
 
 
 if __name__ == "__main__":
-    print('Starting cron scheduler')
+    print("Starting cron scheduler")
 
     worker_thread = threading.Thread(target=worker_main)
     worker_thread.start()

@@ -1,1 +1,1 @@
-worker: echo Hi
+worker: python food-pics/food.py
