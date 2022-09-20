@@ -125,7 +125,11 @@ def worker_main():
     print("Running job exec thread")
     while True:
         job_func = jobqueue.get()
-        job_func()
+        try:
+            job_func()
+        except Exception as e:
+            # swallow the exception so it moves on gracefully
+            print(repr(e))
         jobqueue.task_done()
 
 
